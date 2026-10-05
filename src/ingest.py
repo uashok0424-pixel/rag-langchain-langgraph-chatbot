@@ -50,7 +50,7 @@ def split_documents(documents):
 
 
 def create_vectorstore(chunks):
-    """Create embeddings and save them in FAISS."""
+    """Create Ollama embeddings and save them in FAISS."""
 
     print("Creating embeddings...")
     print(f"Embedding model: {EMBEDDING_MODEL}")

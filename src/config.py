@@ -11,11 +11,9 @@ DOCUMENTS_DIR = BASE_DIR / "data" / "documents"
 VECTORSTORE_DIR = BASE_DIR / "vectorstore" / "faiss_index"
 
 
-# Ollama models
+# Models
 LLM_MODEL = "llama3.2"
 EMBEDDING_MODEL = "nomic-embed-text"
-
-
 # Text splitting settings
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200

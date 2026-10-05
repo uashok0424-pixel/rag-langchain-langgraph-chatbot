@@ -1,27 +1,37 @@
 from pathlib import Path
 
 
-# Project root directory
+# ==========================================
+# PROJECT ROOT
+# ==========================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Documents directory
+# ==========================================
+# DIRECTORIES
+# ==========================================
+
 DOCUMENTS_DIR = BASE_DIR / "data" / "documents"
 
-
-# FAISS vector database directory
 VECTORSTORE_DIR = BASE_DIR / "vectorstore" / "faiss_index"
 
 
-# Ollama models
+# ==========================================
+# LOCAL OLLAMA MODELS
+# ==========================================
+
 LLM_MODEL = "llama3.2"
+
 EMBEDDING_MODEL = "nomic-embed-text"
 
 
-# Text splitting settings
+# ==========================================
+# RAG SETTINGS
+# ==========================================
+
 CHUNK_SIZE = 1000
+
 CHUNK_OVERLAP = 200
 
-
-# Number of documents to retrieve
-TOP_K = 4
+TOP_K = 3

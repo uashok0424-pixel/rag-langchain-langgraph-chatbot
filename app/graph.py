@@ -1,10 +1,25 @@
 from typing import TypedDict
+import sys
+from pathlib import Path
 
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
 
 from rag import load_vectorstore
+
+
+# ==========================================
+# CONFIG
+# ==========================================
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+SRC_DIR = BASE_DIR / "src"
+
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from config import LLM_MODEL, TOP_K
 
 
 # ==========================================
@@ -19,7 +34,7 @@ class GraphState(TypedDict, total=False):
 
 
 # ==========================================
-# LOAD VECTOR STORE
+# LOAD FAISS
 # ==========================================
 
 vectorstore = load_vectorstore()
@@ -30,7 +45,7 @@ vectorstore = load_vectorstore()
 # ==========================================
 
 llm = ChatOllama(
-    model="llama3.2",
+    model=LLM_MODEL,
     temperature=0
 )
 
@@ -45,7 +60,7 @@ def retrieve(state: GraphState):
 
     documents = vectorstore.similarity_search(
         question,
-        k=3
+        k=TOP_K
     )
 
     context = "\n\n".join(
@@ -78,9 +93,9 @@ You are Ashok's A.I., a helpful Java study assistant.
 
 Answer the user's question using ONLY the provided context.
 
-Do not use outside knowledge.
+Do NOT use outside knowledge.
 
-If the answer is not available in the context, say:
+If the answer is not available in the context, say exactly:
 
 I don't have enough information in the provided document.
 
@@ -97,6 +112,8 @@ Context:
 Question:
 
 {question}
+
+Answer:
 """
             )
         ]
@@ -113,6 +130,7 @@ Question:
 
     answer = response.content
 
+    # Handle list response format if returned
     if isinstance(answer, list):
 
         text_parts = []
@@ -178,7 +196,7 @@ if __name__ == "__main__":
     print("=" * 50)
     print("ASHOK'S A.I. - JAVA RAG CHATBOT")
     print("=" * 50)
-    print("Model: llama3.2")
+    print(f"Model: {LLM_MODEL}")
     print("Embedding: nomic-embed-text")
     print("Type 'exit' to quit.")
     print("=" * 50)
@@ -192,7 +210,6 @@ if __name__ == "__main__":
         except (KeyboardInterrupt, EOFError):
 
             print("\nGoodbye!")
-
             break
 
         question = question.strip()
@@ -200,11 +217,9 @@ if __name__ == "__main__":
         if question.lower() in ["exit", "quit"]:
 
             print("Goodbye!")
-
             break
 
         if not question:
-
             continue
 
         try:

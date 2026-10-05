@@ -7,7 +7,7 @@ from graph import graph
 # ---------------------------------
 
 st.set_page_config(
-    page_title="Java RAG Chatbot",
+    page_title="Ashok's A.I.",
     page_icon="🤖",
     layout="centered"
 )
@@ -17,11 +17,21 @@ st.set_page_config(
 # Header
 # ---------------------------------
 
-st.title("🤖 Java RAG Chatbot")
+st.title("🤖 Ashok's A.I.")
+
+st.subheader("Java RAG Chatbot")
 
 st.caption(
-    "Ask questions from your Java notes using RAG + LangGraph + Ollama."
+    "Your personal Java AI powered by RAG + LangGraph + Ollama."
 )
+
+# ---------------------------------
+# Initialize Chat History
+# ---------------------------------
+
+if "messages" not in st.session_state:
+
+    st.session_state.messages = []
 
 
 # ---------------------------------
@@ -33,15 +43,6 @@ if st.button("🗑️ Clear Chat"):
     st.session_state.messages = []
 
     st.rerun()
-
-
-# ---------------------------------
-# Initialize Chat History
-# ---------------------------------
-
-if "messages" not in st.session_state:
-
-    st.session_state.messages = []
 
 
 # ---------------------------------
@@ -101,7 +102,10 @@ if question:
         st.markdown(question)
 
 
-    # Generate answer
+    # ---------------------------------
+    # Generate Answer
+    # ---------------------------------
+
     with st.chat_message("assistant"):
 
         with st.spinner(
@@ -126,7 +130,10 @@ if question:
         st.markdown(answer)
 
 
-        # Display retrieved sources
+        # ---------------------------------
+        # Display Retrieved Sources
+        # ---------------------------------
+
         if documents:
 
             with st.expander(
@@ -147,7 +154,10 @@ if question:
                     )
 
 
-    # Save assistant response
+    # ---------------------------------
+    # Save Assistant Response
+    # ---------------------------------
+
     st.session_state.messages.append(
         {
             "role": "assistant",

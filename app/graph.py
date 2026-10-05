@@ -7,9 +7,9 @@ from langgraph.graph import StateGraph, END
 from rag import load_vectorstore
 
 
-# -----------------------------
-# State
-# -----------------------------
+# ==========================================
+# STATE
+# ==========================================
 
 class GraphState(TypedDict, total=False):
     question: str
@@ -18,11 +18,16 @@ class GraphState(TypedDict, total=False):
     answer: str
 
 
-# -----------------------------
-# Load models
-# -----------------------------
+# ==========================================
+# LOAD VECTOR STORE
+# ==========================================
 
 vectorstore = load_vectorstore()
+
+
+# ==========================================
+# OLLAMA LLM
+# ==========================================
 
 llm = ChatOllama(
     model="llama3.2",
@@ -30,9 +35,9 @@ llm = ChatOllama(
 )
 
 
-# -----------------------------
-# Retrieve documents
-# -----------------------------
+# ==========================================
+# RETRIEVE
+# ==========================================
 
 def retrieve(state: GraphState):
 
@@ -49,41 +54,52 @@ def retrieve(state: GraphState):
     )
 
     return {
+        "question": question,
         "context": context,
         "documents": documents
     }
 
 
-# -----------------------------
-# Generate answer
-# -----------------------------
+# ==========================================
+# GENERATE
+# ==========================================
 
 def generate(state: GraphState):
 
     question = state["question"]
     context = state["context"]
 
-    prompt = ChatPromptTemplate.from_template(
-        """
-You are a helpful Java study assistant.
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+You are Ashok's A.I., a helpful Java study assistant.
 
-Answer the question using ONLY the provided context.
+Answer the user's question using ONLY the provided context.
 
-If the answer is not present in the context,
-say exactly:
+Do not use outside knowledge.
 
-"I don't have enough information in the provided document."
+If the answer is not available in the context, say:
 
-Do not invent information.
+I don't have enough information in the provided document.
 
+Give a clear and simple explanation suitable for a Java student.
+"""
+            ),
+            (
+                "human",
+                """
 Context:
+
 {context}
 
 Question:
-{question}
 
-Answer:
+{question}
 """
+            )
+        ]
     )
 
     chain = prompt | llm
@@ -95,14 +111,34 @@ Answer:
         }
     )
 
+    answer = response.content
+
+    if isinstance(answer, list):
+
+        text_parts = []
+
+        for item in answer:
+
+            if isinstance(item, dict):
+
+                text_parts.append(
+                    item.get("text", "")
+                )
+
+            elif isinstance(item, str):
+
+                text_parts.append(item)
+
+        answer = "".join(text_parts)
+
     return {
-        "answer": response.content
+        "answer": answer
     }
 
 
-# -----------------------------
-# Build LangGraph
-# -----------------------------
+# ==========================================
+# LANGGRAPH
+# ==========================================
 
 graph_builder = StateGraph(GraphState)
 
@@ -133,19 +169,33 @@ graph_builder.add_edge(
 graph = graph_builder.compile()
 
 
-# -----------------------------
-# Terminal chatbot
-# -----------------------------
+# ==========================================
+# TERMINAL CHAT
+# ==========================================
 
 if __name__ == "__main__":
 
     print("=" * 50)
-    print("JAVA RAG CHATBOT")
+    print("ASHOK'S A.I. - JAVA RAG CHATBOT")
+    print("=" * 50)
+    print("Model: llama3.2")
+    print("Embedding: nomic-embed-text")
+    print("Type 'exit' to quit.")
     print("=" * 50)
 
     while True:
 
-        question = input("\nYou: ")
+        try:
+
+            question = input("\nYou: ")
+
+        except (KeyboardInterrupt, EOFError):
+
+            print("\nGoodbye!")
+
+            break
+
+        question = question.strip()
 
         if question.lower() in ["exit", "quit"]:
 
@@ -153,11 +203,22 @@ if __name__ == "__main__":
 
             break
 
-        result = graph.invoke(
-            {
-                "question": question
-            }
-        )
+        if not question:
 
-        print("\nAssistant:")
-        print(result["answer"])
+            continue
+
+        try:
+
+            result = graph.invoke(
+                {
+                    "question": question
+                }
+            )
+
+            print("\nAssistant:")
+            print(result.get("answer", ""))
+
+        except Exception as e:
+
+            print("\nERROR TYPE:", type(e).__name__)
+            print("ERROR:", repr(e))

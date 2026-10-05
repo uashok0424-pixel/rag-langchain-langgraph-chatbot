@@ -24,9 +24,11 @@ def load_documents():
         return documents
 
     for pdf_file in pdf_files:
+
         print(f"Loading: {pdf_file.name}")
 
         loader = PyPDFLoader(str(pdf_file))
+
         documents.extend(loader.load())
 
     print(f"Loaded {len(documents)} pages.")
@@ -52,7 +54,7 @@ def split_documents(documents):
 def create_vectorstore(chunks):
     """Create Ollama embeddings and save them in FAISS."""
 
-    print("Creating embeddings...")
+    print("Creating Ollama embeddings...")
     print(f"Embedding model: {EMBEDDING_MODEL}")
 
     embeddings = OllamaEmbeddings(
